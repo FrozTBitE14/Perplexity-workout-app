@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>8-Week Upper Body</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --s: #1e293b;
+      --sh: #334155;
+      --p: #38bdf8;
+      --scc: #22c55e;
+      --t: #f1f5f9;
+      --t2: #cbd5e1;
+      --tm: #94a3b8;
+      --b: #334155;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background: var(--bg);
+      color: var(--t);
+      padding: 1rem;
+      line-height: 1.5;
+    }
+    .h {
+      background: var(--s);
+      padding: 1.25rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,.3);
+    }
+    .h h1 {
+      font-size: 1.4rem;
+      color: var(--p);
+      margin-bottom: .25rem;
+    }
+    .h p {
+      font-size: .85rem;
+      color: var(--t2);
+    }
+    .c {
+      display: flex;
+      gap: .75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .c select {
+      flex: 1;
+      min-width: 130px;
+      padding: .75rem;
+      background: var(--s);
+      border: 1px solid var(--b);
+      border-radius: 8px;
+      color: var(--t);
+      font-size: .9rem;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .c select:focus {
+      outline: none;
+      border-color: var(--p);
+      box-shadow: 0 0 0 3px rgba(56,189,248,.2);
+    }
+    .ex {
+      background: var(--s);
+      margin-bottom: 1rem;
+      padding: 1.25rem;
+      border-radius: 12px;
+      border-left: 4px solid var(--p);
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    .ex h3 {
+      color: var(--p);
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: .5rem;
+    }
+    .nt {
+      background: var(--sh);
+      padding: .875rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: .875rem;
+      line-height: 1.4;
+      border-left: 3px solid var(--p);
+    }
+    .sg {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(120px,1fr));
+      gap: .75rem;
+      margin-top: 1rem;
+    }
+    .s {
+      background: rgba(71,85,105,.8);
+      padding: .875rem;
+      border-radius: 8px;
+      text-align: center;
+      transition: all .2s;
+      border: 1px solid var(--b);
+    }
+    .s:hover {
+      background: rgba(71,85,105,1);
+      border-color: var(--p);
+    }
+    .sn {
+      font-weight: 600;
+      color: var(--p);
+      margin-bottom: .25rem;
+      font-size: .9rem;
+    }
+    .st {
+      font-size: .85rem;
+      color: var(--scc);
+      margin-bottom: .25rem;
+      font-weight: 500;
+    }
+    .si {
+      display: flex;
+      gap: .5rem;
+    }
+    .si input {
+      flex: 1;
+      padding: .5rem;
+      background: var(--sh);
+      border: 1px solid var(--b);
+      border-radius: 4px;
+      color: var(--t);
+      text-align: center;
+      font-size: .9rem;
+      font-weight: 500;
+    }
+    .si input:focus {
+      outline: none;
+      border-color: var(--p);
+      box-shadow: 0 0 0 2px rgba(56,189,248,.2);
+    }
+    .cb {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: transparent;
+      border: 2px solid var(--b);
+      color: var(--tm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all .2s;
+      margin: .25rem auto 0;
+    }
+    .cb:hover { border-color: var(--scc); }
+    .cb.ch { background: var(--scc); border-color: var(--scc); color:#fff; }
+    .tr {
+      font-size: .8rem;
+      color: var(--t2);
+      margin-top: .5rem;
+      padding: .5rem;
+      background: var(--sh);
+      border-radius: 6px;
+      font-weight: 500;
+    }
+    @media(max-width:600px){
+      .c{flex-direction:column}
+      .sg{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="h">
+    <h1>8-Week Upper Body</h1>
+    <p>V-Taper • Shoulders • Back • Arms • Forearms</p>
+  </div>
+
+  <div class="c">
+    <select id="w">
+      <option>Week 1-2</option>
+      <option>Week 3-4</option>
+      <option>Week 5-6</option>
+      <option>Week 7-8</option>
+    </select>
+    <select id="d">
+      <option>Day 1: Push</option>
+      <option>Day 2: Pull</option>
+      <option>Day 4: Arms</option>
+      <option>Day 6: Upper</option>
+    </select>
+  </div>
+
+  <div id="a"></div>
+
+  <script>
+    const p = {
+      "Day 1: Push": [
+        {
+          n: "Overhead Press (Barbell)",
+          nt: "Bar on front shoulders, elbows forward. Press straight up over mid-foot. Tempo 2-1-1-0. Feel shoulders/triceps.",
+          t: "130x6,130x6,125x6,125x6",
+          s: 4
+        },
+        {
+          n: "Barbell Bench Press",
+          nt: "Eyes under bar, grip nipple-width. Lower to mid-chest, elbows 70°. Tempo 3-1-1-0. Feel chest.",
+          t: "175x6,175x6,170x6,170x6",
+          s: 4
+        },
+        {
+          n: "Incline Barbell Press",
+          nt: "Bench ~45°. Lower to upper chest. Same elbow angle as flat. Feel upper chest/front delts.",
+          t: "150x8,150x7,145x8,145x8",
+          s: 4
+        },
+        {
+          n: "Dumbbell Lateral Raise",
+          nt: "Scapular plane (10° forward), pinkies lead. Tempo 2-0-2-0. Feel side delts.",
+          t: "20x15,20x14,17.5x15,17.5x15",
+          s: 4
+        },
+        {
+          n: "Cable Lateral Raise",
+          nt: "Cable at ankle height. Lean away slightly, pinky leads. Constant tension.",
+          t: "15x20,15x18,12.5x20",
+          s: 3
+        },
+        {
+          n: "Cable Overhead Tricep Extension",
+          nt: "Rope over shoulders. Full stretch at bottom, squeeze triceps at top.",
+          t: "50x15,50x13,45x15",
+          s: 3
+        }
+      ],
+      "Day 2: Pull": [
+        {
+          n: "Deadlift (Conventional)",
+          nt: "Mid-foot under bar. Pull slack out, drag bar up shins, lock hips/knees together.",
+          t: "220x6,220x6,215x6,215x6",
+          s: 4
+        },
+        {
+          n: "Weighted Pull-Ups (Wide)",
+          nt: "Dead hang, chest up. Pull chest to bar. Tempo 2-1-3-0. Feel lats.",
+          t: "BW+25x8,BW+25x7,BW+20x8,BW+20x8",
+          s: 4
+        },
+        {
+          n: "Barbell Row (Overhand)",
+          nt: "Torso ~45°. Pull to lower abs, squeeze scapulae 1s.",
+          t: "170x8,170x7,165x8,165x8",
+          s: 4
+        },
+        {
+          n: "Lat Pulldown (Wide)",
+          nt: "Slight lean back, pull elbows to hips, chest up.",
+          t: "160x12,160x11,155x12",
+          s: 3
+        },
+        {
+          n: "Face Pulls",
+          nt: "Eye‑level rope, pull to forehead, thumbs back. Feel rear delts.",
+          t: "50x20,50x18,45x20,45x20",
+          s: 4
+        },
+        {
+          n: "Barbell Curl",
+          nt: "Elbows pinned. Tempo 2‑1‑2‑0. Full stretch.",
+          t: "75x10,75x9,70x10",
+          s: 3
+        }
+      ],
+      "Day 4: Arms": [
+        {
+          n: "Close-Grip Bench Press",
+          nt: "Grip just inside shoulders, elbows tucked, lower to lower chest. Feel triceps.",
+          t: "145x8,145x7,140x8,140x8",
+          s: 4
+        },
+        {
+          n: "EZ-Bar Curl",
+          nt: "Shoulder‑width grip, elbows pinned, squeeze 1s at top.",
+          t: "70x10,70x9,65x10,65x10",
+          s: 4
+        },
+        {
+          n: "Overhead Rope Tricep Extension",
+          nt: "Rope over shoulders, stretch at bottom, squeeze triceps hard at top.",
+          t: "55x12,55x11,50x12,50x12",
+          s: 4
+        },
+        {
+          n: "Hammer Curl (Week B)",
+          nt: "Neutral grip (thumbs up), pinkies lead. Feel brachialis/forearms.",
+          t: "35x12,35x11,32.5x12,32.5x12",
+          s: 4
+        },
+        {
+          n: "Reverse Curl (Week A)",
+          nt: "Pronated grip. Move only at elbows. Feel brachioradialis.",
+          t: "50x15,50x14,45x15",
+          s: 3
+        },
+        {
+          n: "Seated Wrist Curl (Week A)",
+          nt: "Forearms on thighs, palms up, roll to fingers then curl up.",
+          t: "40x15,40x14,35x15",
+          s: 3
+        },
+        {
+          n: "Wrist Roller",
+          nt: "Roll only with wrists, full up and down. 2 rolls = 1 set.",
+          t: "15lb 2rolls x3",
+          s: 3
+        }
+      ],
+      "Day 6: Upper": [
+        {
+          n: "Overhead Press",
+          nt: "Same execution as Day 1. Heavy, controlled reps.",
+          t: "130x6,130x6,125x6,125x6",
+          s: 4
+        },
+        {
+          n: "Pendlay Row",
+          nt: "Torso parallel to floor, bar dead‑stop each rep, explosive concentric.",
+          t: "155x8,155x7,150x8,150x8",
+          s: 4
+        },
+        {
+          n: "Incline DB Press (30°)",
+          nt: "DBs over mid‑chest, slight twist at top, full stretch at bottom.",
+          t: "65x10,65x9,60x10,60x10",
+          s: 4
+        },
+        {
+          n: "Weighted Chin-Ups (Underhand)",
+          nt: "Underhand grip, chest to bar. Feel biceps + lats.",
+          t: "BW+20x8,BW+20x7,BW+15x8,BW+15x8",
+          s: 4
+        },
+        {
+          n: "Seated DB Lateral Raise",
+          nt: "Sit tall, raise to just below shoulder height, no swinging. Feel side delts.",
+          t: "20x20,20x18,17.5x20,17.5x20",
+          s: 4
+        }
+      ]
+    };
+
+    const boosts = {
+      "Week 1-2": 0,
+      "Week 3-4": 5,
+      "Week 5-6": 7.5,
+      "Week 7-8": 10
+    };
+
+    function render() {
+      const day = document.getElementById("d").value;
+      const week = document.getElementById("w").value;
+      const boost = boosts[week];
+      let html = `<h2 style="color:var(--p);margin:1rem 0 1.5rem;font-size:1.2rem;">${day}</h2>`;
+
+      p[day].forEach(ex => {
+        const target = ex.t.replace(/(\d+(?:\.\d+)?)x/g, (_, n) =>
+          (parseFloat(n) + boost).toFixed(1) + "x"
+        );
+        html += `<div class="ex">
+          <h3>${ex.n}</h3>
+          <div class="nt">${ex.nt}</div>
+          <div class="sg">`;
+        for (let i = 1; i <= ex.s; i++) {
+          html += `<div class="s">
+              <div class="sn">Set ${i}</div>
+              <div class="st">${i}th set</div>
+              <div class="si">
+                <input type="number" step="2.5" placeholder="Wt" />
+                <input type="number" placeholder="Reps" />
+              </div>
+              <button class="cb" onclick="this.classList.toggle('ch')">✓</button>
+            </div>`;
+        }
+        html += `</div>
+          <div class="tr">🎯 Target: <strong>${target}</strong></div>
+        </div>`;
+      });
+
+      document.getElementById("a").innerHTML = html;
+    }
+
+    document.getElementById("w").addEventListener("change", render);
+    document.getElementById("d").addEventListener("change", render);
+    render();
+  </script>
+</body>
+</html>
