@@ -3,276 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hevy Custom Pro - Workout Tracker</title>
+    <title>IRON TRACKER</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .tab-active { @apply text-blue-500 border-t-2 border-blue-500; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); }
-        .exercise-card { transition: transform 0.2s ease; }
-        .exercise-card:active { transform: scale(0.98); }
-        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        :root { --p: #fbbf24; --bg: #000; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; }
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen pb-20">
-
-    <header class="p-4 glass sticky top-0 z-50 flex justify-between items-center border-b border-slate-800">
-        <div>
-            <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">Hevy Custom</h1>
-            <p id="current-split-day" class="text-xs text-slate-400 font-medium tracking-wide uppercase mt-0.5">Push Day</p>
-        </div>
-        <button onclick="toggleReadinessModal()" id="readiness-indicator" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 hover:bg-slate-700 transition-colors">
-            <i data-lucide="zap" class="w-4 h-4 text-emerald-400"></i>
-            <span class="text-sm font-semibold readiness-score-text">Ready</span>
-        </button>
+<body class="pb-20">
+    <header class="p-4 border-b-4 border-yellow-500 bg-black sticky top-0 z-50 flex justify-between items-center">
+        <h1 class="text-xl font-black italic uppercase">Iron <span class="text-yellow-500">Tracker</span></h1>
+        <button onclick="openReadiness()" id="readiness-btn" class="px-3 py-1 bg-zinc-900 text-[10px] font-black uppercase border border-zinc-800">Ready</button>
     </header>
 
-    <main id="app-content" class="p-4 max-w-lg mx-auto">
-        <section id="view-dashboard" class="space-y-6">
-            <div class="grid grid-cols-2 gap-4">
-                <div class="p-4 bg-slate-900 rounded-2xl border border-slate-800">
-                    <p class="text-slate-400 text-xs font-medium mb-1">Weekly Adherence</p>
-                    <p class="text-2xl font-bold">92%</p>
-                    <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
-                        <div class="bg-blue-500 h-full w-[92%]"></div>
-                    </div>
-                </div>
-                <div class="p-4 bg-slate-900 rounded-2xl border border-slate-800">
-                    <p class="text-slate-400 text-xs font-medium mb-1">Fatigue Score</p>
-                    <p class="text-2xl font-bold text-orange-400">Low</p>
-                    <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
-                        <div class="bg-orange-400 h-full w-[30%]"></div>
-                    </div>
-                </div>
+    <main class="p-4 max-w-lg mx-auto">
+        <section id="dashboard" class="space-y-6">
+            <div class="p-6 bg-zinc-900 border-l-4 border-yellow-500 flex justify-between items-center">
+                <div><p class="text-xs text-gray-500 font-bold uppercase">Target</p><h2 id="day-name" class="text-2xl font-black italic uppercase">Push Day</h2></div>
+                <button onclick="start()" class="p-4 bg-yellow-500 text-black rounded-full"><i data-lucide="play"></i></button>
             </div>
-
-            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 h-48">
-                <p class="text-slate-400 text-xs font-medium mb-4 uppercase tracking-wider">Volume Trend</p>
-                <canvas id="volumeChart"></canvas>
-            </div>
-
-            <button onclick="startWorkout()" class="w-full py-4 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 rounded-2xl font-bold text-lg shadow-lg shadow-blue-900/20 flex justify-center items-center gap-2 transition-all">
-                <i data-lucide="play" class="fill-current"></i>
-                Start Workout
-            </button>
+            <div class="h-40 bg-zinc-900 border border-zinc-800 p-2"><canvas id="chart"></canvas></div>
         </section>
 
-        <section id="view-workout" class="hidden space-y-4">
-            <div class="flex justify-between items-center text-sm text-slate-400 mb-2">
-                <span id="workout-timer">00:00:00</span>
-                <span id="total-volume">0 kg</span>
-            </div>
-            <div id="exercise-list" class="space-y-4"></div>
-            <button onclick="finishWorkout()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-2xl font-bold text-lg mt-8 flex justify-center items-center gap-2">
-                <i data-lucide="check-circle" class="w-5 h-5"></i>
-                Finish & Save
-            </button>
+        <section id="workout" class="hidden space-y-6">
+            <div class="flex justify-between items-center"><span id="timer" class="text-3xl font-black text-yellow-500">00:00</span><span id="vol" class="font-black">0 kg</span></div>
+            <div id="exercises" class="space-y-6"></div>
+            <button onclick="finish()" class="w-full py-4 bg-yellow-500 text-black font-black uppercase italic">Finish Session</button>
         </section>
     </main>
 
-    <nav class="fixed bottom-0 left-0 right-0 glass border-t border-slate-800 flex justify-around items-center h-20 px-6 z-50">
-        <button onclick="switchView('dashboard')" class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-white transition-colors" id="nav-dashboard">
-            <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
-            <span class="text-[10px] font-bold uppercase tracking-tight">Home</span>
-        </button>
-        <button onclick="switchView('workout')" class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-white transition-colors" id="nav-workout">
-            <div class="p-2 -mt-10 bg-blue-600 rounded-full shadow-lg shadow-blue-900/40 border-4 border-slate-950">
-                <i data-lucide="dumbbell" class="w-7 h-7 text-white"></i>
-            </div>
-            <span class="text-[10px] font-bold uppercase tracking-tight mt-1">Workout</span>
-        </button>
-        <button onclick="openPlateCalc()" class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-white transition-colors">
-            <i data-lucide="calculator" class="w-6 h-6"></i>
-            <span class="text-[10px] font-bold uppercase tracking-tight">Plates</span>
-        </button>
-        <button onclick="switchView('settings')" class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-white transition-colors" id="nav-settings">
-            <i data-lucide="settings" class="w-6 h-6"></i>
-            <span class="text-[10px] font-bold uppercase tracking-tight">Settings</span>
-        </button>
+    <nav class="fixed bottom-0 left-0 right-0 bg-black border-t border-zinc-800 flex justify-around p-4">
+        <button onclick="tab('dashboard')" class="text-yellow-500"><i data-lucide="home"></i></button>
+        <button onclick="start()"><i data-lucide="dumbbell"></i></button>
+        <button onclick="tools()"><i data-lucide="wrench"></i></button>
     </nav>
 
-    <div id="readiness-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-[100] hidden items-center justify-center p-6">
-        <div class="bg-slate-900 w-full max-w-md rounded-3xl border border-slate-800 p-6 space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold">Daily Readiness</h2>
-                <button onclick="toggleReadinessModal()"><i data-lucide="x" class="w-6 h-6"></i></button>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Sleep Duration (hrs)</label>
-                    <input type="number" id="sleep-input" placeholder="e.g. 7.5" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-lg font-bold">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">HRV (ms)</label>
-                        <input type="number" id="hrv-input" placeholder="65" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-lg font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">RHR (bpm)</label>
-                        <input type="number" id="rhr-input" placeholder="52" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-lg font-bold">
-                    </div>
-                </div>
-                <button onclick="calculateReadiness()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-2xl font-bold text-lg mt-4">Sync & Update</button>
-            </div>
-        </div>
+    <div id="modal" class="fixed inset-0 bg-black/95 z-[100] hidden flex-col p-6 overflow-auto"></div>
+    <div id="rest" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-yellow-500 rounded-full hidden flex-col items-center justify-center z-[200]">
+        <span class="text-black font-black">REST</span><span id="clock" class="text-6xl font-black text-black">60</span>
     </div>
-
-    <div id="rest-timer-overlay" class="fixed bottom-24 right-6 w-32 h-32 rounded-full glass border-2 border-blue-500 flex flex-col items-center justify-center z-40 hidden shadow-2xl">
-        <span class="text-xs font-bold uppercase text-blue-400">Rest</span>
-        <span id="rest-seconds" class="text-3xl font-black">60</span>
-        <button onclick="skipRest()" class="text-[10px] font-bold text-slate-400 hover:text-white">SKIP</button>
-    </div>
-
-    <audio id="beep-low" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
-    <audio id="beep-high" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
 
     <script>
-        const splitRotation = ['Push', 'Pull', 'Rest', 'Arms', 'Rest', 'Upper', 'Rest'];
-        const exercisesDB = {
-            'Push': [{ id: 'bp', name: 'Bench Press', target: '3x8-10', rest: 120 }, { id: 'ohp', name: 'Overhead Press', target: '3x10-12', rest: 90 }],
-            'Pull': [{ id: 'dl', name: 'Deadlift', target: '3x5', rest: 180 }, { id: 'pu', name: 'Pull Ups', target: '3x8-12', rest: 90 }],
-            'Arms': [{ id: 'bc', name: 'Bicep Curls', target: '4x12-15', rest: 60 }, { id: 'te', name: 'Tricep Extensions', target: '4x12-15', rest: 60 }],
-            'Upper': [{ id: 'ip', name: 'Incline Press', target: '3x10-12', rest: 90 }, { id: 'lat', name: 'Lat Pulldowns', target: '3x10-12', rest: 90 }]
+        const PROGRAM = {
+            'Push': [
+                { n: 'Bench Press', s: 4, r: '5-6', w: 175, t: 180, notes: 'Blades back. Tempo 2-1-1-0.', c: ['DB Press', 'Machine Press'] },
+                { n: 'Incline Press', s: 4, r: '6-8', w: 150, t: 150, notes: '45 degrees.' },
+                { n: 'Overhead Press', s: 4, r: '6-8', w: 130, t: 180 },
+                { n: 'Lateral Raise', s: 4, r: '10-12', w: 25, t: 90 },
+                { n: 'Cable Lateral', s: 3, r: '12-15', w: 15, t: 60 },
+                { n: 'Cable Fly', s: 3, r: '12-15', w: 20, t: 90 },
+                { n: 'Tricep Pushdown', s: 3, r: '10-12', w: 50, t: 90 }
+            ],
+            'Pull': [
+                { n: 'Deadlift', s: 3, r: '5', w: 315, t: 240 },
+                { n: 'Chin-Ups', s: 3, r: '8-12', w: 25, t: 120 },
+                { n: 'Pendlay Row', s: 3, r: '10-12', w: 155, t: 120 },
+                { n: 'Face Pulls', s: 3, r: '15-20', w: 40, t: 60 },
+                { n: 'Hammer Curls', s: 4, r: '10-12', w: 35, t: 90 }
+            ],
+            'Arms': [
+                { n: 'EZ-Bar Curl', s: 4, r: '8-10', w: 85, t: 90 },
+                { n: 'Skullcrushers', s: 4, r: '10-12', w: 75, t: 90 },
+                { n: 'Preacher Curl', s: 3, r: '12-15', w: 65, t: 60 },
+                { n: 'Dips', s: 3, r: 'AMRAP', w: 0, t: 120 },
+                { n: 'Forearm Block', s: 3, r: '12-15', w: 15, t: 60 }
+            ],
+            'Upper': [
+                { n: 'Incline DB Press', s: 3, r: '10-12', w: 65, t: 120 },
+                { n: 'Lat Pulldown', s: 3, r: '10-12', w: 140, t: 90 },
+                { n: 'Cable Row', s: 3, r: '12-15', w: 120, t: 90 },
+                { n: 'Lateral Raise', s: 4, r: '12-15', w: 20, t: 60 },
+                { n: 'Rear Delt Fly', s: 3, r: '15-20', w: 15, t: 60 }
+            ],
+            'Rest': []
         };
+        const SPLIT = ['Push', 'Pull', 'Rest', 'Arms', 'Rest', 'Upper', 'Rest'];
+        let state = { day: SPLIT[new Date().getDay() % 7], time: 0, work: null, readiness: { s: 7.5, h: 60 } };
 
-        let state = {
-            currentDayIndex: new Date().getDay() % 7,
-            isWorkoutActive: false,
-            startTime: null,
-            readiness: 100,
-            prs: JSON.parse(localStorage.getItem('prs') || '{}'),
-            history: JSON.parse(localStorage.getItem('history') || '[]')
-        };
-
-        function switchView(view) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(`view-${view}`).classList.remove('hidden');
-            if(view === 'dashboard') updateDashboard();
+        function tab(t) { document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); document.getElementById(t).classList.remove('hidden'); }
+        function start() {
+            if(state.day === 'Rest') { if(!confirm("Rest Day. Train?")) return; state.day = 'Push'; }
+            state.work = JSON.parse(JSON.stringify(PROGRAM[state.day]));
+            tab('workout'); render(); timer();
         }
-
-        function toggleReadinessModal() {
-            const modal = document.getElementById('readiness-modal');
-            modal.classList.toggle('hidden');
-            modal.classList.toggle('flex');
-        }
-
-        function calculateReadiness() {
-            const sleep = parseFloat(document.getElementById('sleep-input').value) || 7;
-            const hrv = parseFloat(document.getElementById('hrv-input').value) || 50;
-            const rhr = parseFloat(document.getElementById('rhr-input').value) || 60;
-            let score = 100;
-            if(sleep < 7) score -= (7 - sleep) * 10;
-            if(hrv < 40) score -= 20;
-            if(rhr > 70) score -= 15;
-            state.readiness = Math.max(0, Math.min(100, score));
-            updateReadinessUI();
-            toggleReadinessModal();
-        }
-
-        function updateReadinessUI() {
-            const text = document.querySelector('.readiness-score-text');
-            text.innerText = state.readiness > 80 ? 'Prime' : (state.readiness > 50 ? 'Moderate' : 'Fatigued');
-        }
-
-        function startWorkout() {
-            state.isWorkoutActive = true;
-            state.startTime = Date.now();
-            switchView('workout');
-            renderExercises();
-            startMainTimer();
-        }
-
-        function renderExercises() {
-            const container = document.getElementById('exercise-list');
-            const dayType = splitRotation[state.currentDayIndex];
-            const exercises = exercisesDB[dayType] || [];
-            container.innerHTML = exercises.map(ex => `
-                <div class="p-4 bg-slate-900 rounded-2xl border border-slate-800 space-y-4">
-                    <h3 class="font-bold text-lg">${ex.name}</h3>
-                    <div id="sets-${ex.id}" class="space-y-2"></div>
-                    <button onclick="addSet('${ex.id}')" class="w-full py-2 bg-slate-800 rounded-xl text-sm font-bold border border-slate-700">+ Add Set</button>
-                </div>
-            `).join('');
-            exercises.forEach(ex => addSet(ex.id));
+        function render() {
+            document.getElementById('exercises').innerHTML = state.work.map((ex, i) => `
+                <div class="bg-zinc-900 border border-zinc-800 p-4 space-y-4">
+                    <div class="flex justify-between">
+                        <div><h3 class="font-black uppercase">${ex.n}</h3><p class="text-[10px] text-yellow-500 font-bold">${ex.s} SETS × ${ex.r}</p></div>
+                        ${ex.c ? `<button onclick="swap(${i})" class="text-yellow-500"><i data-lucide="repeat" class="w-4 h-4"></i></button>` : ''}
+                    </div>
+                    <div class="space-y-2">
+                        ${Array.from({length: ex.s}).map((_, si) => `
+                            <div class="grid grid-cols-5 gap-2 items-center">
+                                <span class="text-[10px] text-zinc-600">S${si+1}</span>
+                                <input type="number" placeholder="${ex.w}" class="bg-black border border-zinc-800 p-2 text-center text-sm font-black w-in" onchange="upVol()">
+                                <input type="number" placeholder="${ex.r.split('-')[0]}" class="bg-black border border-zinc-800 p-2 text-center text-sm font-black r-in" onchange="upVol()">
+                                <input type="number" placeholder="RPE" class="bg-black border border-zinc-800 p-2 text-center text-sm font-black">
+                                <button onclick="done(this, ${ex.t})" class="p-2 bg-zinc-800 rounded d-btn"><i data-lucide="check" class="w-4 h-4"></i></button>
+                            </div>`).join('')}
+                    </div>
+                </div>`).join('');
             lucide.createIcons();
         }
-
-        function addSet(exId) {
-            const setList = document.getElementById(`sets-${exId}`);
-            const setNum = setList.children.length + 1;
-            const setDiv = document.createElement('div');
-            setDiv.className = 'grid grid-cols-5 gap-2 items-center';
-            setDiv.innerHTML = `<span class="text-xs font-bold text-slate-600">SET ${setNum}</span><input type="number" placeholder="kg" class="col-span-1 bg-slate-800 rounded-lg p-2 text-center text-sm font-bold"><input type="number" placeholder="reps" class="col-span-1 bg-slate-800 rounded-lg p-2 text-center text-sm font-bold"><input type="number" placeholder="RPE" class="col-span-1 bg-slate-800 rounded-lg p-2 text-center text-sm font-bold"><button onclick="this.classList.toggle('bg-blue-600'); startRestTimer(60)" class="p-2 bg-slate-800 rounded-lg"><i data-lucide="check" class="w-5 h-5 mx-auto"></i></button>`;
-            setList.appendChild(setDiv);
-            lucide.createIcons();
+        function done(btn, t) { btn.classList.toggle('bg-green-600'); if(btn.classList.contains('bg-green-600')) rest(t); }
+        function rest(s) {
+            const r = document.getElementById('rest'), c = document.getElementById('clock');
+            r.classList.remove('hidden'); let rem = s; c.innerText = rem;
+            const int = setInterval(() => { rem--; c.innerText = rem; if(rem <= 0) { clearInterval(int); r.classList.add('hidden'); new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3').play(); } }, 1000);
         }
-
-        let restInterval;
-        function startRestTimer(seconds) {
-            const overlay = document.getElementById('rest-timer-overlay');
-            const text = document.getElementById('rest-seconds');
-            overlay.classList.remove('hidden');
-            let remaining = seconds;
-            text.innerText = remaining;
-            clearInterval(restInterval);
-            restInterval = setInterval(() => {
-                remaining--;
-                text.innerText = remaining;
-                if(remaining <= 0) {
-                    clearInterval(restInterval);
-                    overlay.classList.add('hidden');
-                    document.getElementById('beep-high').play();
-                }
-            }, 1000);
+        function timer() { setInterval(() => { state.time++; const m = Math.floor(state.time / 60).toString().padStart(2, '0'), s = (state.time % 60).toString().padStart(2, '0'); document.getElementById('timer').innerText = `${m}:${s}`; }, 1000); }
+        function upVol() {
+            let v = 0; document.querySelectorAll('#exercises > div').forEach(c => { c.querySelectorAll('.grid').forEach(r => { v += (parseFloat(r.querySelector('.w-in').value)||0) * (parseInt(r.querySelector('.r-in').value)||0); }); });
+            document.getElementById('vol').innerText = v + ' kg';
         }
-
-        function skipRest() { clearInterval(restInterval); document.getElementById('rest-timer-overlay').classList.add('hidden'); }
-
-        function startMainTimer() {
-            const timerEl = document.getElementById('workout-timer');
-            setInterval(() => {
-                const diff = Date.now() - state.startTime;
-                const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
-                const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-                const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                timerEl.innerText = `${h}:${m}:${s}`;
-            }, 1000);
+        function openReadiness() {
+            const m = document.getElementById('modal');
+            m.innerHTML = `<div class="space-y-8 mt-10"><h2 class="text-3xl font-black uppercase italic">Readiness</h2><div class="space-y-4">
+                <input type="number" id="rs" value="${state.readiness.s}" class="w-full bg-zinc-900 border border-zinc-800 p-4 text-2xl font-black">
+                <input type="number" id="rh" value="${state.readiness.h}" class="w-full bg-zinc-900 border border-zinc-800 p-4 text-2xl font-black"></div>
+                <button onclick="saveR()" class="w-full py-5 bg-yellow-500 text-black font-black uppercase">Sync</button></div>`;
+            m.classList.remove('hidden'); m.classList.add('flex');
         }
-
-        function openPlateCalc() {
-            const target = prompt("Target weight (kg)?", "60");
-            if(!target) return;
-            const plates = [25, 20, 15, 10, 5, 2.5, 1.25];
-            let rem = (parseFloat(target) - 20) / 2;
-            let res = [];
-            for(let p of plates) { while(rem >= p) { res.push(p); rem -= p; } }
-            alert(`Plates per side: ${res.join(', ')}`);
+        function saveR() { state.readiness.s = document.getElementById('rs').value; document.getElementById('readiness-btn').innerText = state.readiness.s < 6 ? "Fatigued" : "Prime"; document.getElementById('modal').classList.add('hidden'); }
+        function swap(i) { const c = state.work[i].c; const res = prompt("Swap with: " + c.join(', '), c[0]); if(c.includes(res)) { state.work[i].n = res; render(); } }
+        function tools() {
+            const m = document.getElementById('modal');
+            m.innerHTML = `<div class="space-y-8 mt-10"><h2 class="text-3xl font-black uppercase">Arsenal</h2>
+                <button onclick="pCalc()" class="p-6 bg-zinc-900 border w-full text-left font-black uppercase italic">Plate Calculator</button>
+                <button onclick="document.getElementById('modal').classList.add('hidden')" class="w-full text-zinc-500">Back</button></div>`;
+            m.classList.remove('hidden');
         }
-
-        let volumeChart;
-        function updateDashboard() {
-            const ctx = document.getElementById('volumeChart').getContext('2d');
-            if(volumeChart) volumeChart.destroy();
-            volumeChart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'], datasets: [{ data: [1200, 1500, 0, 1100, 0, 1800, 0], borderColor: '#3b82f6', tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.1)' }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            document.getElementById('current-split-day').innerText = splitRotation[state.currentDayIndex] + ' Day';
-            updateDashboard();
-        });
-
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+        function pCalc() { const t = prompt("Total (kg)?", "100"); if(!t) return; let s = (t-20)/2; const ps = [25,20,15,10,5,2.5,1.25]; let res=[]; for(let p of ps){while(s>=p){res.push(p);s-=p;}} alert("Side: " + res.join(', ')); }
+        
+        const ctx = document.getElementById('chart').getContext('2d');
+        new Chart(ctx, { type: 'bar', data: { labels: ['M','T','W','T','F','S','S'], datasets: [{ data: [12,15,0,13,0,18,0], backgroundColor: '#fbbf24' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } } });
+        document.getElementById('day-name').innerText = state.day + ' Day';
+        lucide.createIcons();
     </script>
 </body>
 </html>
