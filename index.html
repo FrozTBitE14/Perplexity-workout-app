@@ -1,398 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>8-Week Upper Body</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    :root {
-      --bg: #0f172a;
-      --s: #1e293b;
-      --sh: #334155;
-      --p: #38bdf8;
-      --scc: #22c55e;
-      --t: #f1f5f9;
-      --t2: #cbd5e1;
-      --tm: #94a3b8;
-      --b: #334155;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background: var(--bg);
-      color: var(--t);
-      padding: 1rem;
-      line-height: 1.5;
-    }
-    .h {
-      background: var(--s);
-      padding: 1.25rem;
-      border-radius: 12px;
-      margin-bottom: 1rem;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,.3);
-    }
-    .h h1 {
-      font-size: 1.4rem;
-      color: var(--p);
-      margin-bottom: .25rem;
-    }
-    .h p {
-      font-size: .85rem;
-      color: var(--t2);
-    }
-    .c {
-      display: flex;
-      gap: .75rem;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .c select {
-      flex: 1;
-      min-width: 130px;
-      padding: .75rem;
-      background: var(--s);
-      border: 1px solid var(--b);
-      border-radius: 8px;
-      color: var(--t);
-      font-size: .9rem;
-      cursor: pointer;
-      transition: all .2s;
-    }
-    .c select:focus {
-      outline: none;
-      border-color: var(--p);
-      box-shadow: 0 0 0 3px rgba(56,189,248,.2);
-    }
-    .ex {
-      background: var(--s);
-      margin-bottom: 1rem;
-      padding: 1.25rem;
-      border-radius: 12px;
-      border-left: 4px solid var(--p);
-      box-shadow: 0 2px 8px rgba(0,0,0,.2);
-    }
-    .ex h3 {
-      color: var(--p);
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: .5rem;
-    }
-    .nt {
-      background: var(--sh);
-      padding: .875rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      font-size: .875rem;
-      line-height: 1.4;
-      border-left: 3px solid var(--p);
-    }
-    .sg {
-      display: grid;
-      grid-template-columns: repeat(auto-fit,minmax(120px,1fr));
-      gap: .75rem;
-      margin-top: 1rem;
-    }
-    .s {
-      background: rgba(71,85,105,.8);
-      padding: .875rem;
-      border-radius: 8px;
-      text-align: center;
-      transition: all .2s;
-      border: 1px solid var(--b);
-    }
-    .s:hover {
-      background: rgba(71,85,105,1);
-      border-color: var(--p);
-    }
-    .sn {
-      font-weight: 600;
-      color: var(--p);
-      margin-bottom: .25rem;
-      font-size: .9rem;
-    }
-    .st {
-      font-size: .85rem;
-      color: var(--scc);
-      margin-bottom: .25rem;
-      font-weight: 500;
-    }
-    .si {
-      display: flex;
-      gap: .5rem;
-    }
-    .si input {
-      flex: 1;
-      padding: .5rem;
-      background: var(--sh);
-      border: 1px solid var(--b);
-      border-radius: 4px;
-      color: var(--t);
-      text-align: center;
-      font-size: .9rem;
-      font-weight: 500;
-    }
-    .si input:focus {
-      outline: none;
-      border-color: var(--p);
-      box-shadow: 0 0 0 2px rgba(56,189,248,.2);
-    }
-    .cb {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: transparent;
-      border: 2px solid var(--b);
-      color: var(--tm);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      font-weight: 600;
-      transition: all .2s;
-      margin: .25rem auto 0;
-    }
-    .cb:hover { border-color: var(--scc); }
-    .cb.ch { background: var(--scc); border-color: var(--scc); color:#fff; }
-    .tr {
-      font-size: .8rem;
-      color: var(--t2);
-      margin-top: .5rem;
-      padding: .5rem;
-      background: var(--sh);
-      border-radius: 6px;
-      font-weight: 500;
-    }
-    @media(max-width:600px){
-      .c{flex-direction:column}
-      .sg{grid-template-columns:1fr}
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>8-Week Pro Tracker</title>
+    <style>
+        :root {
+            --bg: #0b0e14;
+            --surface: #1a1d23;
+            --primary: #38bdf8;
+            --accent: #facc15;
+            --success: #22c55e;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --border: #334155;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; }
+        
+        .header { background: var(--surface); padding: 16px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .header h1 { font-size: 18px; color: var(--primary); margin-bottom: 8px; }
+        
+        .selectors { display: flex; gap: 8px; margin-top: 10px; }
+        select { flex: 1; background: #262a33; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; font-size: 14px; }
+
+        .exercise-card { background: var(--surface); margin: 12px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+        .ex-header { padding: 12px; background: rgba(56, 189, 248, 0.05); display: flex; justify-content: space-between; align-items: center; }
+        .ex-title { font-weight: 600; color: var(--primary); font-size: 15px; }
+        .ex-tempo { font-size: 12px; color: var(--accent); font-weight: 700; background: rgba(250, 204, 21, 0.1); padding: 2px 6px; border-radius: 4px; }
+        
+        .ex-notes { padding: 10px 12px; font-size: 13px; color: var(--text-dim); background: #15181e; border-bottom: 1px solid var(--border); font-style: italic; }
+
+        .set-table { width: 100%; border-collapse: collapse; }
+        .set-header { display: grid; grid-template-columns: 40px 1fr 1fr 60px; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text-dim); text-transform: uppercase; }
+        .set-row { display: grid; grid-template-columns: 40px 1fr 1fr 60px; padding: 8px 12px; align-items: center; border-bottom: 1px solid #262a33; transition: background 0.2s; }
+        .set-row.completed { background: rgba(34, 197, 94, 0.05); }
+        .set-num { font-size: 13px; font-weight: 600; color: var(--text-dim); }
+        
+        .input-group { position: relative; padding: 0 4px; }
+        input { width: 100%; background: #262a33; border: 1px solid var(--border); color: white; padding: 8px; border-radius: 6px; text-align: center; font-size: 14px; font-weight: 600; }
+        input:focus { border-color: var(--primary); outline: none; background: #2d323d; }
+        .target-label { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--primary); white-space: nowrap; font-weight: 700; opacity: 0.8; }
+
+        .check-btn { width: 36px; height: 36px; border-radius: 8px; border: 2px solid var(--border); background: transparent; color: white; display: flex; align-items: center; justify-content: center; margin-left: auto; transition: all 0.2s; }
+        .check-btn.active { background: var(--success); border-color: var(--success); color: white; }
+
+        .timer-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -4px 12px rgba(0,0,0,0.3); }
+        .timer-display { font-family: monospace; font-size: 24px; font-weight: 700; color: var(--primary); }
+        .timer-controls button { background: var(--primary); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 14px; }
+
+        .readiness { background: #1e293b; margin: 12px; padding: 16px; border-radius: 12px; border: 1px solid #334155; }
+        .readiness h2 { font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    </style>
 </head>
 <body>
-  <div class="h">
-    <h1>8-Week Upper Body</h1>
-    <p>V-Taper • Shoulders • Back • Arms • Forearms</p>
-  </div>
+    <div class="header">
+        <h1>PRO TRAINING TRACKER</h1>
+        <div class="selectors">
+            <select id="week-select" onchange="renderApp()">
+                <option value="0">Week 1-2</option>
+                <option value="5">Week 3-4 (+5lb)</option>
+                <option value="7.5">Week 5-6 (+7.5lb)</option>
+                <option value="10">Week 7-8 (+10lb)</option>
+            </select>
+            <select id="day-select" onchange="renderApp()">
+                <option>Day 1: Push</option>
+                <option>Day 2: Pull</option>
+                <option>Day 4: Arms</option>
+                <option>Day 6: Upper</option>
+            </select>
+        </div>
+    </div>
 
-  <div class="c">
-    <select id="w">
-      <option>Week 1-2</option>
-      <option>Week 3-4</option>
-      <option>Week 5-6</option>
-      <option>Week 7-8</option>
-    </select>
-    <select id="d">
-      <option>Day 1: Push</option>
-      <option>Day 2: Pull</option>
-      <option>Day 4: Arms</option>
-      <option>Day 6: Upper</option>
-    </select>
-  </div>
+    <div id="app-container"></div>
 
-  <div id="a"></div>
+    <div class="timer-bar">
+        <div class="timer-display" id="timer">01:30</div>
+        <div class="timer-controls">
+            <button onclick="startTimer(90)">START REST</button>
+        </div>
+    </div>
 
-  <script>
-    const p = {
-      "Day 1: Push": [
-        {
-          n: "Overhead Press (Barbell)",
-          nt: "Bar on front shoulders, elbows forward. Press straight up over mid-foot. Tempo 2-1-1-0. Feel shoulders/triceps.",
-          t: "130x6,130x6,125x6,125x6",
-          s: 4
-        },
-        {
-          n: "Barbell Bench Press",
-          nt: "Eyes under bar, grip nipple-width. Lower to mid-chest, elbows 70°. Tempo 3-1-1-0. Feel chest.",
-          t: "175x6,175x6,170x6,170x6",
-          s: 4
-        },
-        {
-          n: "Incline Barbell Press",
-          nt: "Bench ~45°. Lower to upper chest. Same elbow angle as flat. Feel upper chest/front delts.",
-          t: "150x8,150x7,145x8,145x8",
-          s: 4
-        },
-        {
-          n: "Dumbbell Lateral Raise",
-          nt: "Scapular plane (10° forward), pinkies lead. Tempo 2-0-2-0. Feel side delts.",
-          t: "20x15,20x14,17.5x15,17.5x15",
-          s: 4
-        },
-        {
-          n: "Cable Lateral Raise",
-          nt: "Cable at ankle height. Lean away slightly, pinky leads. Constant tension.",
-          t: "15x20,15x18,12.5x20",
-          s: 3
-        },
-        {
-          n: "Cable Overhead Tricep Extension",
-          nt: "Rope over shoulders. Full stretch at bottom, squeeze triceps at top.",
-          t: "50x15,50x13,45x15",
-          s: 3
+    <script>
+        const workoutData = {
+            "Day 1: Push": [
+                { name: "Overhead Press", tempo: "3-1-1-0", note: "Bar to chin, drive up, lock overhead.", target: "130x6,130x6,125x6,125x6" },
+                { name: "Bench Press", tempo: "3-1-1-0", note: "Retract blades, bar to mid-chest.", target: "175x6,175x6,170x6,170x6" },
+                { name: "Incline Barbell Press", tempo: "3-1-1-0", note: "Target upper chest, 45 degree angle.", target: "150x8,150x7,145x8,145x8" },
+                { name: "DB Lateral Raise", tempo: "2-0-2-0", note: "Pinkies up, controlled lower.", target: "20x15,20x15,17.5x15,17.5x15" }
+            ],
+            "Day 2: Pull": [
+                { name: "Deadlift", tempo: "FAST", note: "Neutral spine, drive through floor.", target: "220x6,220x6,215x6,215x6" },
+                { name: "Weighted Pull-Ups", tempo: "2-1-3-0", note: "Chest to bar, slow negative.", target: "25x8,25x7,20x8,20x8" }
+            ],
+            "Day 4: Arms": [
+                { name: "Close-Grip Bench", tempo: "3-1-1-0", note: "Grip inside shoulders, elbows in.", target: "145x8,145x7,140x8,140x8" },
+                { name: "EZ-Bar Curl", tempo: "2-1-2-0", note: "No swing, squeeze 1s at top.", target: "70x10,70x10,65x10,65x10" },
+                { name: "Wrist Roller", tempo: "CONT", note: "Arms straight, roll with wrists only.", target: "15x2,15x2,15x2" }
+            ],
+            "Day 6: Upper": [
+                { name: "Pendlay Row", tempo: "FAST", note: "Dead stop from floor, explosive up.", target: "155x8,155x7,150x8,150x8" },
+                { name: "Incline DB Press", tempo: "2-1-2-0", note: "30 degree incline, full stretch.", target: "65x10,65x10,60x10,60x10" }
+            ]
+        };
+
+        function renderApp() {
+            const container = document.getElementById('app-container');
+            const day = document.getElementById('day-select').value;
+            const boost = parseFloat(document.getElementById('week-select').value);
+            
+            let html = '';
+            workoutData[day].forEach((ex, exIdx) => {
+                const targets = ex.target.split(',');
+                html += `
+                    <div class="exercise-card">
+                        <div class="ex-header">
+                            <span class="ex-title">${ex.name}</span>
+                            <span class="ex-tempo">TEMPO: ${ex.tempo}</span>
+                        </div>
+                        <div class="ex-notes">${ex.note}</div>
+                        <div class="set-header">
+                            <div>SET</div>
+                            <div style="text-align:center">LBS</div>
+                            <div style="text-align:center">REPS</div>
+                            <div></div>
+                        </div>
+                `;
+
+                targets.forEach((t, setIdx) => {
+                    const [weight, reps] = t.split('x');
+                    const targetWeight = (parseFloat(weight) + boost).toFixed(1);
+                    html += `
+                        <div class="set-row" id="row-${exIdx}-${setIdx}">
+                            <div class="set-num">${setIdx + 1}</div>
+                            <div class="input-group">
+                                <span class="target-label">TARGET: ${targetWeight}</span>
+                                <input type="number" placeholder="${targetWeight}">
+                            </div>
+                            <div class="input-group">
+                                <span class="target-label">TARGET: ${reps}</span>
+                                <input type="number" placeholder="${reps}">
+                            </div>
+                            <button class="check-btn" onclick="toggleSet(${exIdx}, ${setIdx})">✓</button>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            });
+            container.innerHTML = html;
         }
-      ],
-      "Day 2: Pull": [
-        {
-          n: "Deadlift (Conventional)",
-          nt: "Mid-foot under bar. Pull slack out, drag bar up shins, lock hips/knees together.",
-          t: "220x6,220x6,215x6,215x6",
-          s: 4
-        },
-        {
-          n: "Weighted Pull-Ups (Wide)",
-          nt: "Dead hang, chest up. Pull chest to bar. Tempo 2-1-3-0. Feel lats.",
-          t: "BW+25x8,BW+25x7,BW+20x8,BW+20x8",
-          s: 4
-        },
-        {
-          n: "Barbell Row (Overhand)",
-          nt: "Torso ~45°. Pull to lower abs, squeeze scapulae 1s.",
-          t: "170x8,170x7,165x8,165x8",
-          s: 4
-        },
-        {
-          n: "Lat Pulldown (Wide)",
-          nt: "Slight lean back, pull elbows to hips, chest up.",
-          t: "160x12,160x11,155x12",
-          s: 3
-        },
-        {
-          n: "Face Pulls",
-          nt: "Eye‑level rope, pull to forehead, thumbs back. Feel rear delts.",
-          t: "50x20,50x18,45x20,45x20",
-          s: 4
-        },
-        {
-          n: "Barbell Curl",
-          nt: "Elbows pinned. Tempo 2‑1‑2‑0. Full stretch.",
-          t: "75x10,75x9,70x10",
-          s: 3
+
+        function toggleSet(ex, set) {
+            const btn = document.querySelector(`#row-${ex}-${set} .check-btn`);
+            const row = document.getElementById(`row-${ex}-${set}`);
+            btn.classList.toggle('active');
+            row.classList.toggle('completed');
+            if(btn.classList.contains('active')) startTimer(90);
         }
-      ],
-      "Day 4: Arms": [
-        {
-          n: "Close-Grip Bench Press",
-          nt: "Grip just inside shoulders, elbows tucked, lower to lower chest. Feel triceps.",
-          t: "145x8,145x7,140x8,140x8",
-          s: 4
-        },
-        {
-          n: "EZ-Bar Curl",
-          nt: "Shoulder‑width grip, elbows pinned, squeeze 1s at top.",
-          t: "70x10,70x9,65x10,65x10",
-          s: 4
-        },
-        {
-          n: "Overhead Rope Tricep Extension",
-          nt: "Rope over shoulders, stretch at bottom, squeeze triceps hard at top.",
-          t: "55x12,55x11,50x12,50x12",
-          s: 4
-        },
-        {
-          n: "Hammer Curl (Week B)",
-          nt: "Neutral grip (thumbs up), pinkies lead. Feel brachialis/forearms.",
-          t: "35x12,35x11,32.5x12,32.5x12",
-          s: 4
-        },
-        {
-          n: "Reverse Curl (Week A)",
-          nt: "Pronated grip. Move only at elbows. Feel brachioradialis.",
-          t: "50x15,50x14,45x15",
-          s: 3
-        },
-        {
-          n: "Seated Wrist Curl (Week A)",
-          nt: "Forearms on thighs, palms up, roll to fingers then curl up.",
-          t: "40x15,40x14,35x15",
-          s: 3
-        },
-        {
-          n: "Wrist Roller",
-          nt: "Roll only with wrists, full up and down. 2 rolls = 1 set.",
-          t: "15lb 2rolls x3",
-          s: 3
+
+        let timerInterval;
+        function startTimer(seconds) {
+            clearInterval(timerInterval);
+            let time = seconds;
+            const display = document.getElementById('timer');
+            
+            timerInterval = setInterval(() => {
+                let mins = Math.floor(time / 60);
+                let secs = time % 60;
+                display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                if (time <= 0) {
+                    clearInterval(timerInterval);
+                    if (window.navigator.vibrate) window.navigator.vibrate([200, 100, 200]);
+                    alert('Time to lift!');
+                }
+                time--;
+            }, 1000);
         }
-      ],
-      "Day 6: Upper": [
-        {
-          n: "Overhead Press",
-          nt: "Same execution as Day 1. Heavy, controlled reps.",
-          t: "130x6,130x6,125x6,125x6",
-          s: 4
-        },
-        {
-          n: "Pendlay Row",
-          nt: "Torso parallel to floor, bar dead‑stop each rep, explosive concentric.",
-          t: "155x8,155x7,150x8,150x8",
-          s: 4
-        },
-        {
-          n: "Incline DB Press (30°)",
-          nt: "DBs over mid‑chest, slight twist at top, full stretch at bottom.",
-          t: "65x10,65x9,60x10,60x10",
-          s: 4
-        },
-        {
-          n: "Weighted Chin-Ups (Underhand)",
-          nt: "Underhand grip, chest to bar. Feel biceps + lats.",
-          t: "BW+20x8,BW+20x7,BW+15x8,BW+15x8",
-          s: 4
-        },
-        {
-          n: "Seated DB Lateral Raise",
-          nt: "Sit tall, raise to just below shoulder height, no swinging. Feel side delts.",
-          t: "20x20,20x18,17.5x20,17.5x20",
-          s: 4
-        }
-      ]
-    };
 
-    const boosts = {
-      "Week 1-2": 0,
-      "Week 3-4": 5,
-      "Week 5-6": 7.5,
-      "Week 7-8": 10
-    };
-
-    function render() {
-      const day = document.getElementById("d").value;
-      const week = document.getElementById("w").value;
-      const boost = boosts[week];
-      let html = `<h2 style="color:var(--p);margin:1rem 0 1.5rem;font-size:1.2rem;">${day}</h2>`;
-
-      p[day].forEach(ex => {
-        const target = ex.t.replace(/(\d+(?:\.\d+)?)x/g, (_, n) =>
-          (parseFloat(n) + boost).toFixed(1) + "x"
-        );
-        html += `<div class="ex">
-          <h3>${ex.n}</h3>
-          <div class="nt">${ex.nt}</div>
-          <div class="sg">`;
-        for (let i = 1; i <= ex.s; i++) {
-          html += `<div class="s">
-              <div class="sn">Set ${i}</div>
-              <div class="st">${i}th set</div>
-              <div class="si">
-                <input type="number" step="2.5" placeholder="Wt" />
-                <input type="number" placeholder="Reps" />
-              </div>
-              <button class="cb" onclick="this.classList.toggle('ch')">✓</button>
-            </div>`;
-        }
-        html += `</div>
-          <div class="tr">🎯 Target: <strong>${target}</strong></div>
-        </div>`;
-      });
-
-      document.getElementById("a").innerHTML = html;
-    }
-
-    document.getElementById("w").addEventListener("change", render);
-    document.getElementById("d").addEventListener("change", render);
-    render();
-  </script>
+        renderApp();
+    </script>
 </body>
 </html>
