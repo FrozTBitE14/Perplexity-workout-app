@@ -1,1 +1,313 @@
-<!DOCTYPE html><html lang="en"><head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> <title>IRON TRACKER</title> <link rel="manifest" href="manifest.json"> <script src="https://cdn.tailwindcss.com"></script> <script src="https://unpkg.com/lucide@latest"></script> <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <style> @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap'); :root { --p: #fbbf24; --bg: #000; } body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; overflow-x: hidden; } .modal-active { overflow: hidden; } </style></head><body class="pb-24"> <header class="p-4 border-b-4 border-yellow-500 bg-black sticky top-0 z-50 flex justify-between items-center"> <h1 class="text-xl font-black italic uppercase">Iron <span class="text-yellow-500">Tracker</span></h1> <div class="flex gap-2"> <button onclick="syncAll()" class="p-2 bg-zinc-900 border border-zinc-800 rounded-full"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button> <button onclick="openReadiness()" id="readiness-btn" class="px-3 py-1 bg-zinc-900 text-[10px] font-black uppercase border border-zinc-800">Ready</button> </div> </header> <main class="p-4 max-w-lg mx-auto space-y-6"> <section id="dashboard" class="space-y-6"> <div class="p-6 bg-zinc-900 border-l-4 border-yellow-500 flex justify-between items-center"> <div><p class="text-xs text-gray-500 font-bold uppercase">Target</p><h2 id="day-name" class="text-2xl font-black italic uppercase">Loading...</h2></div> <button onclick="start()" class="p-4 bg-yellow-500 text-black rounded-full shadow-lg shadow-yellow-500/20"><i data-lucide="play"></i></button> </div> <div class="grid grid-cols-2 gap-4"> <div class="bg-zinc-900 border border-zinc-800 p-4 text-center"> <p class="text-[10px] text-zinc-500 font-bold uppercase">Fitness (CTL)</p> <p id="fitness-val" class="text-2xl font-black">--</p> </div> <div class="bg-zinc-900 border border-zinc-800 p-4 text-center"> <p class="text-[10px] text-zinc-500 font-bold uppercase">Form (TSB)</p> <p id="form-val" class="text-2xl font-black text-green-500">--</p> </div> </div> <div class="h-48 bg-zinc-900 border border-zinc-800 p-2"><canvas id="chart"></canvas></div> </section> <section id="workout" class="hidden space-y-6"> <div class="flex justify-between items-center bg-zinc-900 p-4 border border-zinc-800"><span id="timer" class="text-3xl font-black text-yellow-500">00:00</span><span id="vol" class="font-black text-xl">0 kg</span></div> <div id="exercises" class="space-y-6"></div> <button onclick="finish()" class="w-full py-4 bg-yellow-500 text-black font-black uppercase italic">Finish Session</button> </section> </main> <nav class="fixed bottom-0 left-0 right-0 bg-black border-t border-zinc-800 flex justify-around p-4 z-[60]"> <button onclick="tab('dashboard')" class="text-yellow-500"><i data-lucide="home"></i></button> <button onclick="start()"><i data-lucide="dumbbell"></i></button> <button onclick="tools()"><i data-lucide="wrench"></i></button> </nav> <div id="modal" class="fixed inset-0 bg-black/95 z-[100] hidden flex-col p-6 overflow-auto"></div> <div id="rest" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-yellow-500 rounded-full hidden flex-col items-center justify-center z-[200]"> <span class="text-black font-black">REST</span><span id="clock" class="text-6xl font-black text-black">60</span> </div> <script> const KEYS = { HEVY: 'ace9e972-f9e8-4408-9fa3-da3c4ce3ac9f', INT: '4ddugym0ycjryn8kj1dnk74s5' }; const PROGRAM = { 'Push': [{n:'Bench Press',s:4,r:'5-6',w:175,t:180},{n:'Incline Press',s:4,r:'6-8',w:150,t:150},{n:'Overhead Press',s:4,r:'6-8',w:130,t:180},{n:'Lateral Raise',s:4,r:'10-12',w:25,t:90},{n:'Cable Lateral',s:3,r:'12-15',w:15,t:60},{n:'Cable Fly',s:3,r:'12-15',w:20,t:90},{n:'Tricep Pushdown',s:3,r:'10-12',w:50,t:90}], 'Pull': [{n:'Deadlift',s:3,r:'5',w:315,t:240},{n:'Chin-Ups',s:3,r:'8-12',w:25,t:120},{n:'Pendlay Row',s:3,r:'10-12',w:155,t:120},{n:'Face Pulls',s:3,r:'15-20',w:40,t:60},{n:'Hammer Curls',s:4,r:'10-12',w:35,t:90}], 'Arms': [{n:'EZ-Bar Curl',s:4,r:'8-10',w:85,t:90},{n:'Skullcrushers',s:4,r:'10-12',w:75,t:90},{n:'Preacher Curl',s:3,r:'12-15',w:65,t:60},{n:'Dips',s:3,r:'AMRAP',w:0,t:120},{n:'Forearm Block',s:3,r:'12-15',w:15,t:60}], 'Upper': [{n:'Incline DB Press',s:3,r:'10-12',w:65,t:120},{n:'Lat Pulldown',s:3,r:'10-12',w:140,t:90},{n:'Cable Row',s:3,r:'12-15',w:120,t:90},{n:'Lateral Raise',s:4,r:'12-15',w:20,t:60},{n:'Rear Delt Fly',s:3,r:'15-20',w:15,t:60}] }; const SPLIT = ['Push','Pull','Rest','Arms','Rest','Upper','Rest']; let state = { day: SPLIT[new Date().getDay()%7], time: 0, work: null, readiness: {s:7.5, h:60}, timerInt: null, chart: null }; function tab(t) { document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); document.getElementById(t).classList.remove('hidden'); } async function syncAll() { try { const res = await fetch('https://api.hevyapp.com/v1/workouts?page=1&pageSize=7', {headers:{'api-key':KEYS.HEVY}}); const data = await res.json(); const volumes = data.workouts.map(w => w.total_volume_kg).reverse(); updateChart(volumes); const intRes = await fetch('https://intervals.icu/api/v1/athlete/i0/profile', {headers:{'Authorization': 'ApiKey API_KEY:'+KEYS.INT}}); const intData = await intRes.json(); document.getElementById('fitness-val').innerText = Math.round(intData.ctl || 0); document.getElementById('form-val').innerText = Math.round(intData.tsb || 0); } catch(e) { console.error('Sync failed', e); } } function updateChart(data) { if(state.chart) state.chart.destroy(); const ctx = document.getElementById('chart').getContext('2d'); state.chart = new Chart(ctx, { type: 'bar', data: { labels: ['M','T','W','T','F','S','S'], datasets: [{ data: data.length ? data : [0,0,0,0,0,0,0], backgroundColor: '#fbbf24' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } } }); } function start() { if(state.day === 'Rest') { const choice = prompt("Rest Day. Train anyway? (Push/Pull/Arms/Upper)", "Push"); if(!choice || !PROGRAM[choice]) return; state.day = choice; } state.work = JSON.parse(JSON.stringify(PROGRAM[state.day])); tab('workout'); render(); if(!state.timerInt) timer(); } function render() { document.getElementById('exercises').innerHTML = state.work.map((ex, i) => ` <div class="bg-zinc-900 border border-zinc-800 p-4 space-y-4"> <div class="flex justify-between"> <div><h3 class="font-black uppercase">${ex.n}</h3><p class="text-[10px] text-yellow-500 font-bold">${ex.s} SETS × ${ex.r}</p></div> </div> <div class="space-y-2"> ${Array.from({length: ex.s}).map((_, si) => ` <div class="grid grid-cols-5 gap-2 items-center"> <span class="text-[10px] text-zinc-600">S${si+1}</span> <input type="number" placeholder="${ex.w}" class="bg-black border border-zinc-800 p-2 text-center text-sm font-black w-in" oninput="upVol()"> <input type="number" placeholder="${ex.r.split('-')[0]}" class="bg-black border border-zinc-800 p-2 text-center text-sm font-black r-in" oninput="upVol()"> <input type="number" placeholder="RPE" class="bg-black border border-zinc-800 p-2 text-center text-sm font-black"> <button onclick="done(this, ${ex.t})" class="p-2 bg-zinc-800 rounded transition-colors"><i data-lucide="check" class="w-4 h-4"></i></button> </div> `).join('')} </div> </div> `).join(''); lucide.createIcons(); } function done(btn, t) { btn.classList.toggle('bg-green-600'); if(btn.classList.contains('bg-green-600')) rest(t); } function rest(s) { const r = document.getElementById('rest'), c = document.getElementById('clock'); r.classList.remove('hidden'); let rem = s; c.innerText = rem; const int = setInterval(() => { rem--; c.innerText = rem; if(rem <= 0) { clearInterval(int); r.classList.add('hidden'); } }, 1000); } function timer() { state.timerInt = setInterval(() => { state.time++; const m = Math.floor(state.time / 60).toString().padStart(2, '0'), s = (state.time % 60).toString().padStart(2, '0'); document.getElementById('timer').innerText = `${m}:${s}`; }, 1000); } function finish() { if(confirm("Finish session?")) { clearInterval(state.timerInt); state.timerInt = null; state.time = 0; tab('dashboard'); } } function upVol() { let v = 0; document.querySelectorAll('#exercises > div').forEach(c => { c.querySelectorAll('.grid').forEach(r => { const w = parseFloat(r.querySelector('.w-in').value) || parseFloat(r.querySelector('.w-in').placeholder) || 0; const reps = parseInt(r.querySelector('.r-in').value) || parseInt(r.querySelector('.r-in').placeholder) || 0; v += w * reps; }); }); document.getElementById('vol').innerText = v + ' kg'; } function openReadiness() { const m = document.getElementById('modal'); m.innerHTML = `<div class="space-y-8 mt-10"><h2 class="text-3xl font-black uppercase italic">Readiness</h2><div class="space-y-4"> <p class="text-xs uppercase font-bold text-zinc-500">Sleep Score (1-10)</p><input type="number" id="rs" value="${state.readiness.s}" class="w-full bg-zinc-900 border border-zinc-800 p-4 text-2xl font-black"> <p class="text-xs uppercase font-bold text-zinc-500">HRV (ms)</p><input type="number" id="rh" value="${state.readiness.h}" class="w-full bg-zinc-900 border border-zinc-800 p-4 text-2xl font-black"></div> <button onclick="saveR()" class="w-full py-5 bg-yellow-500 text-black font-black uppercase">Sync</button> <button onclick="document.getElementById('modal').classList.add('hidden')" class="w-full py-4 text-zinc-500 font-bold uppercase">Cancel</button></div>`; m.classList.remove('hidden'); m.classList.add('flex'); } function saveR() { state.readiness.s = document.getElementById('rs').value; document.getElementById('readiness-btn').innerText = state.readiness.s < 6 ? "Fatigued" : "Prime"; document.getElementById('modal').classList.add('hidden'); } function tools() { const m = document.getElementById('modal'); m.innerHTML = `<div class="space-y-8 mt-10"><h2 class="text-3xl font-black uppercase italic">Arsenal</h2> <button onclick="pCalc()" class="p-6 bg-zinc-900 border border-zinc-800 w-full text-left font-black uppercase italic flex justify-between">Plate Calculator <i data-lucide="calculator"></i></button> <button onclick="document.getElementById('modal').classList.add('hidden')" class="w-full py-4 text-zinc-500 font-bold uppercase">Close</button></div>`; lucide.createIcons(); m.classList.remove('hidden'); } function pCalc() { const t = prompt("Total (kg)?", "100"); if(!t) return; let s = (t-20)/2; const ps = [25,20,15,10,5,2.5,1.25]; let res=[]; for(let p of ps){while(s>=p){res.push(p);s-=p;}} alert("Side: " + res.join(', ')); } document.getElementById('day-name').innerText = state.day + ' Day'; updateChart([0,0,0,0,0,0,0]); lucide.createIcons(); syncAll(); </script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IRON TRACKER</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        :root { --p: #fbbf24; --bg: #000; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; overflow-x: hidden; }
+        .modal-active { overflow: hidden; }
+    </style>
+</head>
+<body class="pb-24">
+    <header class="p-4 border-b-4 border-yellow-500 bg-black sticky top-0 z-50 flex justify-between items-center">
+        <h1 class="text-xl font-black italic uppercase">Iron <span class="text-yellow-500">Tracker</span></h1>
+        <div class="flex gap-2">
+            <button onclick="syncAll()" class="p-2 bg-zinc-900 border border-zinc-800 rounded-full"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+            <button onclick="openReadiness()" id="readiness-btn" class="px-3 py-1 bg-zinc-900 text-[10px] font-black uppercase border border-zinc-800">Ready</button>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-lg mx-auto space-y-6">
+        <section id="dashboard" class="space-y-6">
+            <div class="p-6 bg-zinc-900 border-l-4 border-yellow-500 flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-gray-500 font-bold uppercase">Target</p>
+                    <h2 id="day-name" class="text-2xl font-black italic uppercase">Loading...</h2>
+                    <p id="est-time" class="text-[10px] text-yellow-500 font-bold uppercase mt-1">Est: 60m</p>
+                </div>
+                <button onclick="start()" class="p-4 bg-yellow-500 text-black rounded-full shadow-lg shadow-yellow-500/20"><i data-lucide="play"></i></button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-zinc-900 border border-zinc-800 p-4 text-center">
+                    <p class="text-[10px] text-zinc-500 font-bold uppercase">Fitness (CTL)</p>
+                    <p id="fitness-val" class="text-2xl font-black">--</p>
+                </div>
+                <div class="bg-zinc-900 border border-zinc-800 p-4 text-center">
+                    <p class="text-[10px] text-zinc-500 font-bold uppercase">Form (TSB)</p>
+                    <p id="form-val" class="text-2xl font-black text-green-500">--</p>
+                </div>
+            </div>
+
+            <div class="h-48 bg-zinc-900 border border-zinc-800 p-2">
+                <canvas id="chart"></canvas>
+            </div>
+        </section>
+
+        <section id="workout" class="hidden space-y-6">
+            <div class="flex justify-between items-center bg-zinc-900 p-4 border border-zinc-800">
+                <span id="timer" class="text-3xl font-black text-yellow-500">00:00</span>
+                <span id="vol" class="font-black text-xl">0 kg</span>
+            </div>
+            <div id="exercises" class="space-y-6"></div>
+            <button onclick="finish()" class="w-full py-4 bg-yellow-500 text-black font-black uppercase italic">Finish Session</button>
+        </section>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-black border-t border-zinc-800 flex justify-around p-4 z-[60]">
+        <button onclick="tab('dashboard')" class="text-yellow-500"><i data-lucide="home"></i></button>
+        <button onclick="start()"><i data-lucide="dumbbell"></i></button>
+        <button onclick="tools()"><i data-lucide="wrench"></i></button>
+    </nav>
+
+    <div id="modal" class="fixed inset-0 bg-black/95 z-[100] hidden flex-col p-6 overflow-auto"></div>
+    <div id="rest" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-yellow-500 rounded-full hidden flex-col items-center justify-center z-[200]">
+        <span class="text-black font-black">REST</span>
+        <span id="clock" class="text-6xl font-black text-black">60</span>
+    </div>
+
+    <script>
+        const KEYS = { HEVY: 'ace9e972-f9e8-4408-9fa3-da3c4ce3ac9f', INT: '4ddugym0ycjryn8kj1dnk74s5' };
+        
+        const PROGRAM = {
+            'Push': [
+                {n:'Bench Press',s:3,r:'5-6',w:175,t:180},
+                {n:'Incline Press',s:3,r:'6-8',w:150,t:150},
+                {n:'Overhead Press',s:3,r:'6-8',w:130,t:180},
+                {n:'Lateral Raise',s:4,r:'10-12',w:25,t:90},
+                {n:'Cable Lateral',s:3,r:'12-15',w:15,t:60},
+                {n:'Cable Fly',s:3,r:'12-15',w:20,t:90},
+                {n:'Tricep Pushdown',s:3,r:'10-12',w:50,t:90}
+            ],
+            'Pull': [
+                {n:'Deadlift',s:3,r:'5',w:315,t:240},
+                {n:'Chin-Ups',s:3,r:'8-12',w:25,t:120},
+                {n:'Pendlay Row',s:3,r:'10-12',w:155,t:120},
+                {n:'Face Pulls',s:4,r:'15-20',w:40,t:60},
+                {n:'Hammer Curls',s:4,r:'10-12',w:35,t:90},
+                {n:'Bicep Curl',s:3,r:'12-15',w:25,t:60}
+            ],
+            'Arms': [
+                {n:'EZ-Bar Curl',s:4,r:'8-10',w:85,t:90},
+                {n:'Skullcrushers',s:4,r:'10-12',w:75,t:90},
+                {n:'Preacher Curl',s:4,r:'12-15',w:65,t:60},
+                {n:'Dips',s:4,r:'AMRAP',w:0,t:120},
+                {n:'Forearm Block',s:4,r:'12-15',w:15,t:60}
+            ],
+            'Upper': [
+                {n:'Incline DB Press',s:4,r:'10-12',w:65,t:120},
+                {n:'Lat Pulldown',s:4,r:'10-12',w:140,t:90},
+                {n:'Cable Row',s:4,r:'12-15',w:120,t:90},
+                {n:'Lateral Raise',s:4,r:'12-15',w:20,t:60},
+                {n:'Rear Delt Fly',s:4,r:'15-20',w:15,t:60}
+            ]
+        };
+
+        const SPLIT = ['Push','Pull','Rest','Arms','Rest','Upper','Rest'];
+        let state = { 
+            day: SPLIT[new Date().getDay()%7], 
+            time: 0, 
+            work: null, 
+            readiness: {s:7.5, h:60}, 
+            timerInt: null, 
+            chart: null,
+            hevyTemplates: []
+        };
+
+        function tab(t) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(t).classList.remove('hidden');
+        }
+
+        async function syncAll() {
+            try {
+                const intRes = await fetch('https://intervals.icu/api/v1/athlete/i0/profile', {
+                    headers: {'Authorization': 'Basic ' + btoa('API_KEY:' + KEYS.INT)}
+                });
+                const intData = await intRes.json();
+                document.getElementById('fitness-val').innerText = Math.round(intData.ctl || 0);
+                document.getElementById('form-val').innerText = Math.round(intData.tsb || 0);
+
+                const tempRes = await fetch('https://api.hevyapp.com/v1/exercise_templates', {headers:{'api-key':KEYS.HEVY}});
+                const tempData = await tempRes.json();
+                state.hevyTemplates = tempData.exercise_templates;
+
+                const res = await fetch('https://api.hevyapp.com/v1/workouts?page=1&pageSize=10', {headers:{'api-key':KEYS.HEVY}});
+                const data = await res.json();
+                
+                data.workouts.forEach(w => {
+                    w.exercises.forEach(ex => {
+                        const maxW = Math.max(...ex.sets.map(s => s.weight_kg || 0));
+                        for(let day in PROGRAM) {
+                            const match = PROGRAM[day].find(p => p.n.toLowerCase() === ex.title.toLowerCase());
+                            if(match && maxW > 0) match.w = maxW;
+                        }
+                    });
+                });
+
+                const volumes = data.workouts.map(w => w.total_volume_kg).reverse();
+                updateChart(volumes);
+            } catch(e) { console.error('Sync failed', e); }
+        }
+
+        async function pushHevyRoutines() {
+            if(!state.hevyTemplates.length) await syncAll();
+            for(let [name, exercises] of Object.entries(PROGRAM)) {
+                const body = {
+                    routine: {
+                        title: "Iron: " + name,
+                        exercises: exercises.map(ex => {
+                            const temp = state.hevyTemplates.find(t => t.title.toLowerCase() === ex.n.toLowerCase());
+                            return {
+                                exercise_template_id: temp ? temp.id : null,
+                                sets: Array.from({length: ex.s}).map(() => ({
+                                    type: "normal",
+                                    weight_kg: ex.w,
+                                    reps: parseInt(ex.r) || 10
+                                }))
+                            };
+                        }).filter(e => e.exercise_template_id)
+                    }
+                };
+                await fetch('https://api.hevyapp.com/v1/routines', {
+                    method: 'POST',
+                    headers: {'api-key': KEYS.HEVY, 'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+            }
+            alert("Routines updated in Hevy App.");
+        }
+
+        function updateChart(data) {
+            if(state.chart) state.chart.destroy();
+            const ctx = document.getElementById('chart').getContext('2d');
+            state.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['M','T','W','T','F','S','S'],
+                    datasets: [{ data: data.length ? data : [0,0,0,0,0,0,0], backgroundColor: '#fbbf24' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
+            });
+        }
+
+        function start() {
+            if(state.day === 'Rest') {
+                const choice = prompt("Rest Day. Train anyway? (Push/Pull/Arms/Upper)", "Push");
+                if(!choice || !PROGRAM[choice]) return;
+                state.day = choice;
+            }
+            state.work = JSON.parse(JSON.stringify(PROGRAM[state.day]));
+            tab('workout');
+            render();
+            if(!state.timerInt) timer();
+        }
+
+        function render() {
+            document.getElementById('exercises').innerHTML = state.work.map((ex, i) => `
+                <div class="bg-zinc-900 border border-zinc-800 p-4 space-y-4">
+                    <div class="flex justify-between">
+                        <div><h3 class="font-black uppercase">${ex.n}</h3><p class="text-[10px] text-yellow-500 font-bold">${ex.s} SETS × ${ex.r}</p></div>
+                    </div>
+                    <div class="space-y-2">
+                        ${Array.from({length: ex.s}).map((_, si) => `
+                            <div class="grid grid-cols-5 gap-2 items-center">
+                                <span class="text-[10px] text-zinc-600">S${si+1}</span>
+                                <input type="number" placeholder="${ex.w}" class="bg-black border border-zinc-800 p-2 text-center text-sm font-black w-in" oninput="upVol()">
+                                <input type="number" placeholder="${ex.r.split('-')[0]}" class="bg-black border border-zinc-800 p-2 text-center text-sm font-black r-in" oninput="upVol()">
+                                <input type="number" placeholder="RPE" class="bg-black border border-zinc-800 p-2 text-center text-sm font-black">
+                                <button onclick="done(this, ${ex.t})" class="p-2 bg-zinc-800 rounded transition-colors"><i data-lucide="check" class="w-4 h-4"></i></button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function done(btn, t) {
+            btn.classList.toggle('bg-green-600');
+            if(btn.classList.contains('bg-green-600')) rest(t);
+        }
+
+        function rest(s) {
+            const r = document.getElementById('rest'), c = document.getElementById('clock');
+            r.classList.remove('hidden');
+            let rem = s; c.innerText = rem;
+            const int = setInterval(() => {
+                rem--; c.innerText = rem;
+                if(rem <= 0) { clearInterval(int); r.classList.add('hidden'); }
+            }, 1000);
+        }
+
+        function timer() {
+            state.timerInt = setInterval(() => {
+                state.time++;
+                const m = Math.floor(state.time / 60).toString().padStart(2, '0'), s = (state.time % 60).toString().padStart(2, '0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        async function finish() {
+            if(confirm("Finish & Sync session?")) {
+                clearInterval(state.timerInt);
+                state.timerInt = null; state.time = 0; tab('dashboard');
+            }
+        }
+
+        function upVol() {
+            let v = 0;
+            document.querySelectorAll('#exercises > div').forEach(c => {
+                c.querySelectorAll('.grid').forEach(r => {
+                    const w = parseFloat(r.querySelector('.w-in').value) || parseFloat(r.querySelector('.w-in').placeholder) || 0;
+                    const reps = parseInt(r.querySelector('.r-in').value) || parseInt(r.querySelector('.r-in').placeholder) || 0;
+                    v += w * reps;
+                });
+            });
+            document.getElementById('vol').innerText = v + ' kg';
+        }
+
+        function openReadiness() {
+            const m = document.getElementById('modal');
+            m.innerHTML = `<div class="space-y-8 mt-10"><h2 class="text-3xl font-black uppercase italic">Readiness</h2><div class="space-y-4">
+                <p class="text-xs uppercase font-bold text-zinc-500">Sleep Score (1-10)</p><input type="number" id="rs" value="${state.readiness.s}" class="w-full bg-zinc-900 border border-zinc-800 p-4 text-2xl font-black">
+                <p class="text-xs uppercase font-bold text-zinc-500">HRV (ms)</p><input type="number" id="rh" value="${state.readiness.h}" class="w-full bg-zinc-900 border border-zinc-800 p-4 text-2xl font-black"></div>
+                <button onclick="saveR()" class="w-full py-5 bg-yellow-500 text-black font-black uppercase">Save & Sync</button>
+                <button onclick="document.getElementById('modal').classList.add('hidden')" class="w-full py-4 text-zinc-500 font-bold uppercase">Cancel</button></div>`;
+            m.classList.remove('hidden'); m.classList.add('flex');
+        }
+
+        function saveR() {
+            state.readiness.s = document.getElementById('rs').value;
+            document.getElementById('readiness-btn').innerText = state.readiness.s < 6 ? "Fatigued" : "Prime";
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        function tools() {
+            const m = document.getElementById('modal');
+            m.innerHTML = `<div class="space-y-8 mt-10"><h2 class="text-3xl font-black uppercase italic">Arsenal</h2>
+                <button onclick="pushHevyRoutines()" class="p-6 bg-zinc-900 border border-zinc-800 w-full text-left font-black uppercase italic flex justify-between">Push to Hevy App <i data-lucide="upload"></i></button>
+                <button onclick="pCalc()" class="p-6 bg-zinc-900 border border-zinc-800 w-full text-left font-black uppercase italic flex justify-between">Plate Calculator <i data-lucide="calculator"></i></button>
+                <button onclick="document.getElementById('modal').classList.add('hidden')" class="w-full py-4 text-zinc-500 font-bold uppercase">Close</button></div>`;
+            lucide.createIcons(); m.classList.remove('hidden');
+        }
+
+        function pCalc() {
+            const t = prompt("Total (kg)?", "100"); if(!t) return;
+            let s = (t-20)/2; const ps = [25,20,15,10,5,2.5,1.25]; let res=[];
+            for(let p of ps){while(s>=p){res.push(p);s-=p;}} alert("Side: " + res.join(', '));
+        }
+
+        document.getElementById('day-name').innerText = state.day + ' Day';
+        lucide.createIcons();
+        syncAll();
+    </script>
+</body>
+</html>
