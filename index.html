@@ -256,7 +256,7 @@
         }
 
         async function finish() {
-            if(confirm("Finish & Sync session?")) {
+            if(confirm("Finish & Sync session?")) { const now = Math.floor(Date.now()/1000); const exercises_data = state.work.map((ex,i) => { const rows = document.querySelectorAll('#exercises > div')[i]?.querySelectorAll('.grid') || []; const sets = Array.from(rows).map(r => ({ type:'normal', weight_kg: parseFloat(r.querySelector('.w-in')?.value) || ex.w, reps: parseInt(r.querySelector('.r-in')?.value) || parseInt(ex.r) || 10 })); return { title: ex.n, sets }; }); fetch('https://api.hevyapp.com/v1/workouts', { method:'POST', headers:{'api-key':KEYS.HEVY,'Content-Type':'application/json'}, body:JSON.stringify({ workout:{ title: state.day+' Day', start_time: now - state.time, end_time: now, exercises: exercises_data.map(ex => { const t = state.hevyTemplates.find(t => t.title.toLowerCase()===ex.title.toLowerCase()); return { exercise_template_id: t ? t.id : null, sets: ex.sets }; }).filter(e => e.exercise_template_id) } }) }).then(()=>alert('Synced to Hevy!')).catch(e=>console.error(e));
                 clearInterval(state.timerInt);
                 state.timerInt = null; state.time = 0; tab('dashboard');
             }
@@ -285,7 +285,7 @@
         }
 
         function saveR() {
-            state.readiness.s = document.getElementById('rs').value;
+            state.readiness.s = document.getElementById('rs').value; state.readiness.h = document.getElementById('rh').value; state.readiness.h = document.getElementById('rh').value;
             document.getElementById('readiness-btn').innerText = state.readiness.s < 6 ? "Fatigued" : "Prime";
             document.getElementById('modal').classList.add('hidden');
         }
